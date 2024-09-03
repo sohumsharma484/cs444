@@ -1,0 +1,6 @@
+numpy
+gradescope-utils
+matplotlib
+tensorboardX
+tensorboard
+absl-py
