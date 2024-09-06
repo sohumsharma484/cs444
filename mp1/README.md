@@ -164,7 +164,7 @@
     
     Show that the gradient of $L_d$ with respect to $w_j$ is given by
     
-    $$\frac{\partial L_d}{w_j} = \frac{1}{N} \sum_{n=1}^N (p_j(x_i) - \delta_{y_i, j}) x_i$$
+    $$\frac{\partial L_d}{w_j} = \frac{1}{N} \sum_{i=1}^N (p_j(x_i) - \delta_{y_i, j}) x_i$$
     
     where $\delta_{y_i, j}$ is the Kronecker delta. Show your derivation in your answer.
     
