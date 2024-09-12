@@ -155,12 +155,12 @@
     $$L_d = -\frac{1}{N}\sum_{i=1}^N \log \left(p_{y_i} (x_i)\right)$$ 
 
     Typically, a regularization term, $L_r$, is also added to the loss function:
-    $$L_r = \frac{1}{2} \sum_{c=1}^C w_{c}^Tw_{c}$$
-
-    The total loss is then given by:
-    $$L = L_d + \lambda L_r$$
+    $$L_r = \frac{\lambda}{2} \sum_{c=1}^C w_{c}^Tw_{c}$$
 
     where $\lambda$ is the regularization strength
+
+    The total loss is then given by:
+    $$L = L_d +  L_r$$
     
     Show that the gradient of $L_d$ with respect to $w_j$ is given by
     
