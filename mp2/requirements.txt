@@ -1,0 +1,7 @@
+numpy
+gradescope-utils
+tensorboardX
+tensorboard
+absl-py
+tqdm
+Pillow
