@@ -3,7 +3,7 @@
 ### Do not change the following 8 lines.
 #SBATCH --time=03:00:00                         # Job run time (hh:mm:ss)
 #SBATCH --nodes=1                               # Number of nodes
-#SBATCH --ntasks-per-node=4                     # Number of task (cores/ppn) per node
+#SBATCH --ntasks-per-node=8                     # Number of task (cores/ppn) per node
 #SBATCH --mem=16g                               # Amount of CPU memory
 #SBATCH --job-name=cs444mp3                     # Name of batch job
 #SBATCH --partition=IllinoisComputes-GPU
@@ -14,8 +14,10 @@
 #SBATCH --mail-user=NETID@illinois.edu          # replace with your email
 #SBATCH --mail-type=NONE                        # Type of email notifications to send
 
-#SBATCH --output=cs444mp3.out.%j                # Name of batch job output file
-#SBATCH --error=cs444mp3.err.%j                 # Name of batch job error file
+#SBATCH --output=cs444mp3.out.%j                # Default name of batch job
+# 					        # output file if not set on command line
+#SBATCH --error=cs444mp3.err.%j                 # Default name of batch job 
+# 					        # error file if not set on command line
 
 ###############################################################################
 # Change to the directory from which the batch job was submitted
@@ -37,7 +39,11 @@ export PYTHONUNBUFFERED=1
 
 # This creates output directory for every run. Change OUTPUT_DIR while
 # performing each run and ablation experiment
-OUTPUT_DIR="runs/run1/"
+
+# Assign a default value of runs/run1 to 'OUTPUT_DIR' only if not set on
+# command line already. For each different experiment you run, you should use a
+# different OUTPUT_DIR. Change it in the command line flag.
+OUTPUT_DIR=${OUTPUT_DIR:="runs/run1"}
 mkdir -p ${OUTPUT_DIR}            
 
 LOG_FILE="${OUTPUT_DIR}/log.txt"

@@ -75,7 +75,7 @@ def validate(dataset, dataloader, device, model,
     model.eval()
 
     results = []
-    for i, (image, _, _, _, image_id, resize_factor) in enumerate(tqdm(dataloader, ncols=80, mininterval=20, position=-1)):
+    for i, (image, _, _, _, image_id, resize_factor) in enumerate(dataloader):
         image = image.to(device)
         results += predict_image(image, image_id, resize_factor, model, 
                                  list(dataset.cat_map))
@@ -91,7 +91,7 @@ def test(dataset, dataloader, device, model, result_file_name):
     model.eval()
     
     results = []
-    for i, (image, _, _, _, image_id, resize_factor) in enumerate(tqdm(dataloader, ncols=80, mininterval=20, position=-1)):
+    for i, (image, _, _, _, image_id, resize_factor) in enumerate(dataloader):
         image = image.to(device)
         results += predict_image(image, image_id, resize_factor, model, 
                                  list(dataset.cat_map))

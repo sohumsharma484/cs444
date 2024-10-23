@@ -22,12 +22,12 @@ flags.DEFINE_string('output_dir', 'runs/retina-net-basic/', 'Output Directory')
 flags.DEFINE_integer('batch_size', 1, 'Batch Size')
 flags.DEFINE_integer('seed', 2, 'Random seed')
 flags.DEFINE_integer('max_iter', 100000, 'Total Iterations')
+flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
+flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
 flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
-val_every = 50000
-save_every = 50000
 log_every = 20
 
 def setup_logging():
@@ -148,10 +148,10 @@ def main(_):
             times_np, cls_loss_np, bbox_loss_np, total_loss_np = [], [], [], []
 
 
-        if (i+1) % save_every == 0:
+        if (i+1) % FLAGS.save_every == 0:
             torch.save(model.state_dict(), f'{FLAGS.output_dir}/model_{i+1}.pth')
             
-        if (i+1) % val_every == 0 or (i+1) == FLAGS.max_iter:
+        if (i+1) % FLAGS.val_every == 0 or (i+1) == FLAGS.max_iter:
             logging.info(f'Validating at {i+1} iterations.')
             val_dataloader = DataLoader(dataset_val, num_workers=3, collate_fn=collater)
             result_file_name = f'{FLAGS.output_dir}/results_{i+1}_val.json'

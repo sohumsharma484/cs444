@@ -42,13 +42,22 @@
    clone to work on your assignment. You are responsible for preventing other
    students from copying your work.
 
+5. Change Log:
+  - Released on Oct 18
+  - Oct 23, we made some small logging fixes and added some command line arguments for easier code execution.
+  - Oct 23: We have released leading curves for some runs as a reference, details can be found under section 6
+  - Oct 23: We have also updated the Campus Cluster instructions with more details (For e.g. how to run tensorboard) and a best practices section. 
+
 
 ### Suggested Development Workflow
 
-For questions 1 through 5, you can do your development on 
-on a local machine without a GPU. For Q6,
-where you have to actually train the model, you will need to use the Campus Cluster setup. Follow the instructions [here](https://docs.google.com/document/d/1xdeSnUcaPfER2B7fE1SvcpbXQ8wKy-UBYreqLEzmw4w/edit)
-
+1. For questions 1 through 5, you can do your development on a local machine without a GPU.
+2. For Q6, where you have to actually train the model, you will need to use a serious GPU for a few hours to train the model. We have arranged access to GPUs on the Campus Cluster for this purpose. See instructions here [doc](https://docs.google.com/document/d/1xdeSnUcaPfER2B7fE1SvcpbXQ8wKy-UBYreqLEzmw4w/edit?usp=sharing):
+   - On the campus cluster, nominally your jobs will get executed with standard priority, but on the following dates (Oct 29 to Oct 31, and Nov 3 to Nov 5), you will have higher priority over other users and your jobs are likely to start running more promptly.
+   - You should follow best practices in using the cluster (mentioned under section 5: **Campus Cluster Best Practices** in the instructions document), e.g. you should not request a job longer than 3 hours, should not queue more than 1 job at a time, not run anything on the root node etc. We (and the people who run the Campus Cluster) will be strictly monitoring usage patterns. Violating campus cluster policies may cause you to be banned from using it, and we will not be able to provide any help in that situation. So, please be careful.
+   - If things go as planned, our calculations suggest that you should be able to get one 3 hour training run done per day on campus cluster. But please plan for additional time and don't wait till the last day to start traiing your models. 
+   - You can also explore other training options as well, like [Kaggle](https://www.kaggle.com/code) and [Google Colab Pro](https://colab.research.google.com/signup). Your personal compute device may also have a decent enough GPU, check on that as well.
+   
 
 ### Setup
 
@@ -196,15 +205,19 @@ YoLo, FCOS, RetinaNet). In this programming assignment, we will implement
 6. [3pts Autograded, 2pts Manually Graded] **Training the Detector**
 
    Once you have passed the above tests, you can start training the RetinaNet
-   with the following command. This command took around 2 hours to run on a A100
-   GPU on the campus cluster setup.  The training loop also does validation once in a while and also saves
+   with the following command. The training loop also does validation once in a while and also saves
    train / val metrics into the output directory `runs/run1`. 
     
    ```bash
    python demo.py --seed 2 --lr 1e-2 --batch_size 1 --output_dir runs/run1
    ```
 
-    You can refer to [sample.sbatch](./sample.sbatch) script for running on the campus cluster. Since you will be performing multiple training runs, it is advised to maintain proper directory structure of your output folder. We suggest you use the `runs` folder provided, and change the `--output_dir` flag in every run (E.g. `runs/run1`, `runs/run2`, ...). Make sure to make these changes in the [sample.sbatch](./sample.sbatch) file's `OUTPUT_DIR` variable.
+    You can refer to [sample.sbatch](./sample.sbatch) script for running on the campus cluster. Since you will be performing multiple training runs, it is advised to maintain proper directory structure of your output folder. We suggest you use the `runs` folder provided for every run(E.g. `runs/run1`, `runs/run2`, ...). Refer to the following command to run your [sample.sbatch](./sample.sbatch) script. Variables `$OUTPUT_DIR` and Flags `--output`, `--error` should be changed for every subsequent run. Your log files (python terminal output) will be saved in `$OUTPUT_DIR/log.txt`. We created a python virtual environment and already downloaded the dataset for you to use on the campuscluter. Submitting jobs using the sbatch file that we provide should already use these.
+
+    ```bash
+    sbatch --export=ALL,OUTPUT_DIR="runs/run1/" --output="runs/run1/%j.out" --error="runs/run1/%j.err" sample.sbatch
+    ```
+   As per our implementation, this command took around around 2 hours to run on a A100 GPU on the campus cluster setup with 20it/s observed on average. Since training times heavily depend on implementation optimization, you may benefit from vectorizing your code. Refer to campus cluster intructions mentioned under **Suggested Development Workflow** for more details.
 
     Now comes the fun part. Note that this basic training using the above
     command actually doesn't train. What we will do next is try to get this
@@ -251,7 +264,12 @@ YoLo, FCOS, RetinaNet). In this programming assignment, we will implement
     
    Use some of these (or other) ideas to improve the performance of the
    detector. You can do this development on the validation set (validation
-   performance already being logged to tensorboard in the script). We will be providing leading curves for some runs as a reference in a few days as well.
+   performance already being logged to tensorboard in the script). ~~We will be providing leading curves for some runs as a reference in a few days as well.~~ To help you get started, we are providing
+   training / validation loss plots for two reference runs:
+   - **Gradient Clipping + Learning Rate Warmup** Just adding these two things,
+   we were able to start training reasonable models and achieve an AP of 0.288.
+   Reference training / validation plots can be found in `runs/ref1`.
+   - **Gradient Clipping + Learning Rate Warmup + Focal Loss + Flip Augmentation** This gave us an AP of 0.323. Reference training / validation plots can be found in `runs/ref2`.
 
 
    Once you are happy with the performance of your model on the validation set, compute
