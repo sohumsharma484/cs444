@@ -6,6 +6,7 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "4" # export VECLIB_MAXIMUM_THREADS=4
 os.environ["NUMEXPR_NUM_THREADS"] = "4" # export NUMEXPR_NUM_THREADS=6
 
 import torch
+import time
 from torch import nn
 import torchvision
 from dataset import CocoDataset
@@ -19,6 +20,7 @@ import json
 import numpy as np
 from dataset import CocoDataset, collater, Resizer, Normalizer
 from torchvision import transforms
+import logging
 
 FLAGS = flags.FLAGS
 flags.DEFINE_float('test_nms_thresh', 0.5, 'Threshold for NMS')
@@ -31,31 +33,44 @@ flags.DEFINE_string('model_dir', 'runs/retina-net-basic', 'Output Directory')
 def predict_image(image, image_id, resize_factor, model, cat_map):
     model.eval()
     results = []
+    model_time, box_decode_time, nms_time = 0, 0, 0
+    num_dets_before_nms, num_dets_after_nms = 0, 0
 
     with torch.no_grad():
+        model_time = time.time()
         outs = model(image)
-
         pred_clss, pred_bboxes, anchors = get_detections(outs)
         prob_clss = pred_clss.sigmoid()
+        model_time = time.time() - model_time
+
         prob_clss = prob_clss[0,...]
         pred_bboxes = pred_bboxes[0,...]
         anchors = anchors[0,...]
+
+        box_decode_time = time.time()
         out_bboxes = apply_bbox_deltas(anchors, pred_bboxes)
         out_bboxes = out_bboxes / resize_factor[0]
+        box_decode_time = time.time() - box_decode_time
         
+        nms_time = time.time()
         for j in range(prob_clss.shape[1]):
             prob_cls = prob_clss[:,j]
             out_bbox = out_bboxes + 0.
             anchor = anchors + 0.
             keep = prob_cls > FLAGS.test_score_thresh
+            num_dets_before_nms += keep.sum().item()
+            
             prob_cls = prob_cls[keep]
             out_bbox = out_bbox[keep,:]
             anchor = anchor[keep,:]
             keep = nms(anchor, prob_cls, FLAGS.test_nms_thresh)
+            
             prob_cls = prob_cls[keep]
             out_bbox = out_bbox[keep,:]
             anchor = anchor[keep,:]
             keep = torch.argsort(prob_cls, descending=True)[:FLAGS.test_det_thresh]
+            num_dets_after_nms += len(keep)
+            
             prob_cls = prob_cls[keep]
             out_bbox = out_bbox[keep,:]
             anchor = anchor[keep,:]
@@ -68,17 +83,39 @@ def predict_image(image, image_id, resize_factor, model, cat_map):
                 res['bbox'] = [a[0], a[1], a[2]-a[0], a[3]-a[1]]
                 res['score'] = p
                 results.append(res)
-    return results
+        nms_time = time.time() - nms_time
+    return results, model_time, box_decode_time, nms_time, num_dets_before_nms, num_dets_after_nms
 
 def validate(dataset, dataloader, device, model, 
              result_file_name, writer, iteration):
     model.eval()
 
     results = []
+    model_times, box_decode_times, nms_times = [], [], [] 
+    num_dets_before_nms, num_dets_after_nms = [], []
+
     for i, (image, _, _, _, image_id, resize_factor) in enumerate(dataloader):
         image = image.to(device)
-        results += predict_image(image, image_id, resize_factor, model, 
-                                 list(dataset.cat_map))
+        result, model_time, box_decode_time, nms_time, num_det_before_nms, num_det_after_nms = \
+            predict_image(image, image_id, resize_factor, model, list(dataset.cat_map))
+        results += result
+        model_times.append(model_time)
+        box_decode_times.append(box_decode_time)
+        nms_times.append(nms_time)
+        num_dets_before_nms.append(num_det_before_nms)
+        num_dets_after_nms.append(num_det_after_nms)
+        
+        if (i+1) % 200 == 0:
+            print('')
+            logging.info(f'Tested on {i+1} / {len(dataloader)} validation images.')
+            logging.info(f'  model_time (per image)       : {np.mean(model_times):0.3f}')
+            logging.info(f'  box_decode_time (per image)  : {np.mean(box_decode_times):0.3f}')
+            logging.info(f'  nms_time (per image)         : {np.mean(nms_times):0.3f}')
+            logging.info(f'  dets before nms (per image)  : {np.mean(num_dets_before_nms):0.1f}')
+            logging.info(f'  dets after nms (per image)   : {np.mean(num_dets_after_nms):0.1f}')
+            model_times, box_decode_times, nms_times = [], [], [] 
+            num_dets_before_nms, num_dets_after_nms = [], []
+
     if len(results) > 0:
         json.dump(results, open(result_file_name, 'w'))
         metrics, classes = dataset.evaluate(result_file_name)
@@ -93,8 +130,9 @@ def test(dataset, dataloader, device, model, result_file_name):
     results = []
     for i, (image, _, _, _, image_id, resize_factor) in enumerate(dataloader):
         image = image.to(device)
-        results += predict_image(image, image_id, resize_factor, model, 
-                                 list(dataset.cat_map))
+        result, _, _, _, _, _ = predict_image(image, image_id, resize_factor,
+                                              model, list(dataset.cat_map))
+        results += result
     
     json.dump(results, open(result_file_name, 'w'))
 
@@ -116,7 +154,9 @@ def main(_):
     results = []
     for i, (image, _, _, _, image_id, resize_factor) in enumerate(tqdm(dataloader, ncols=80, mininterval=20, position=-1)):
         image = image.to(device)
-        results += predict_image(image, image_id, resize_factor, model, list(dataset.cat_map))
+        result, _, _, _, _, _ = predict_image(image, image_id, resize_factor,
+                                              model, list(dataset.cat_map))
+        results += result
     
     results_file_name = f'{FLAGS.model_dir}/results_{FLAGS.test_model_checkpoint}_{FLAGS.test_set}.json'
     json.dump(results, open(results_file_name, 'w'))

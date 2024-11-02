@@ -47,6 +47,7 @@
   - Oct 23, we made some small logging fixes and added some command line arguments for easier code execution.
   - Oct 23: We have released leading curves for some runs as a reference, details can be found under section 6
   - Oct 23: We have also updated the Campus Cluster instructions with more details (For e.g. how to run tensorboard) and a best practices section. 
+  - Nov 2: we have added some additional timing logging to validation to help you debug in case validation takes a longer time for you .
 
 
 ### Suggested Development Workflow
