@@ -83,7 +83,7 @@ for Q2.
    where $Q$ is the query matrix, $K$ is the key matrix, $V$ is the value matrix, and $d_k$ is the dimension of the key matrix.
    
    <div align="center">
-   <img alt="attention" src="attention.ppm" width="20%">
+   <img alt="attention" src="attention.png" width="20%">
    </div>
 
    Self-attention is a type of attention mechanism used in transformers. In self-attention, a model calculates the attention weights between each element in the input sequence, allowing it to focus on the relevant factors for a given task. The self-attention layer in ViT makes it possible to embed information globally across the overall image. Finish the implementation of self attention by following the instruction in class [SelfAttention](./transformer_utils.py#L5).
