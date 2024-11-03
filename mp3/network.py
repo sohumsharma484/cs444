@@ -59,6 +59,21 @@ class Anchors(nn.Module):
         aspect_ratio = h/w
         """
         super(Anchors, self).__init__()
+        self.stride = stride
+        self.sizes = sizes
+        self.aspect_ratios = aspect_ratios
+        self.anchor_offsets = torch.zeros(len(sizes) * len(aspect_ratios), 4)
+        idx = 0
+        for size in sizes:
+            h = size * stride / 2
+            w = size * stride / 2
+            for aspect_ratio in aspect_ratios:
+                hn = h * math.sqrt(aspect_ratio)
+                wn = w / math.sqrt(aspect_ratio)
+                self.anchor_offsets[idx] = torch.tensor([-wn, -hn, wn, hn])
+                idx += 1
+        self.anchor_offsets = torch.flatten(self.anchor_offsets)
+        self.offsets = len(self.anchor_offsets)
 
     def forward(self, x):
         """
@@ -82,8 +97,19 @@ class Anchors(nn.Module):
             Your final code should be fully verterized and not have any for loops. 
             Also make sure that when you create a tensor you put it on the same device that x is on.
         """
+        B, C, H, W = x.shape
+        # device = x.device
+        # x = torch.arange(H) * self.stride
+        # y = torch.arange(W) * self.stride
+        # y, x = torch.meshgrid(x, y, indexing='ij')
+        # grid = torch.stack([x, y]).repeat(self.offsets//2, 1, 1)
+        # offsets = self.anchor_offsets.reshape(-1, 1, 1)
+        # output = grid + offsets
 
-        return anchors
+        # output = output.repeat(B, 1, 1, 1).to(device)
+        yp, xp = torch.meshgrid(torch.arange(W) * self.stride, torch.arange(H) * self.stride, indexing='ij')
+        return (torch.stack([yp, xp]).repeat(self.offsets//2, 1, 1) + self.anchor_offsets.reshape(-1, 1, 1)).repeat(B, 1, 1, 1).to(x.device)
+        # return output
 
 
 class RetinaNet(nn.Module):
