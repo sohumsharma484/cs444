@@ -88,13 +88,13 @@ def compute_targets(anchor, cls, bbox):
     zeros = torch.tensor([0, 0, 0, 0]).float().to(device)
     for i in range(anchor.shape[0]):
         ious = compute_bbox_iou(anchor[0], bbox[0])
-        max_ious, max_indices = torch.max(ious, dim=1).to(device)
+        max_ious, max_indices = torch.max(ious, dim=1)
         gt_clss[i][max_ious < 0.5] = -1
         gt_bboxes[i][max_ious < 0.5] = zeros
         gt_clss[i][max_ious < 0.4] = 0
         gt_bboxes[i][max_ious < 0.4] = zeros
-        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float()
-        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]]
+        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float().to(device)
+        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]].to(device)
 
     return gt_clss.to(torch.int), gt_bboxes
 
