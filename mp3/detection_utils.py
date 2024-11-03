@@ -95,7 +95,7 @@ def compute_targets(anchor, cls, bbox):
         gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float()
         gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]]
 
-    return gt_clss.to(torch.int), gt_bboxes
+    return gt_clss.to(torch.int), gt_bboxes.to(anchor.device)
 
 def compute_bbox_targets(anchors, gt_bboxes):
     """
@@ -125,7 +125,7 @@ def compute_bbox_targets(anchors, gt_bboxes):
     delta_y = ((gt_bboxes[:,3] + gt_bboxes[:,1]) / 2 - (anchors[:,3] + anchors[:,1]) / 2) / (anchors[:,3] - anchors[:,1])
     delta_w = torch.log(torch.clamp(gt_bboxes[:,2] - gt_bboxes[:,0], min=1) /(anchors[:,2] - anchors[:,0]))
     delta_h = torch.log(torch.clamp(gt_bboxes[:,3] - gt_bboxes[:,1], min=1) /(anchors[:,3] - anchors[:,1]))
-    return torch.stack([delta_x, delta_y, delta_w, delta_h], dim=-1)
+    return torch.stack([delta_x, delta_y, delta_w, delta_h], dim=-1).to(anchors.device)
 
 def apply_bbox_deltas(boxes, deltas):
     """
@@ -149,7 +149,7 @@ def apply_bbox_deltas(boxes, deltas):
     new_height = torch.exp(deltas[:,3]) * height
     new_boxes[:,1] = center_y - new_height / 2
     new_boxes[:,3] = center_y + new_height / 2
-    return new_boxes
+    return new_boxes.to(boxes.device)
 
 def nms(bboxes, scores, threshold=0.5):
     """
@@ -180,4 +180,4 @@ def nms(bboxes, scores, threshold=0.5):
         if (iou < threshold).all():
             keep.append(idx)
 
-    return torch.tensor(keep).long()
+    return torch.tensor(keep).long().to(bboxes.device)
