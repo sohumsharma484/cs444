@@ -93,8 +93,8 @@ def compute_targets(anchor, cls, bbox):
         gt_bboxes[i][max_ious < 0.5] = zeros
         gt_clss[i][max_ious < 0.4] = 0
         gt_bboxes[i][max_ious < 0.4] = zeros
-        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float().to(device)
-        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]].to(device)
+        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float()
+        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]]
 
     return gt_clss.to(torch.int), gt_bboxes
 
