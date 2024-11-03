@@ -82,20 +82,21 @@ def compute_targets(anchor, cls, bbox):
     This will remove the need for a for loop over all the anchor boxes. You can then do the same for the other cases. This will make your code much more efficient and faster to train.
     """
     # TODO(student): Complete this function
-    gt_clss = torch.zeros(anchor.shape[0], anchor.shape[1], 1)
-    gt_bboxes = torch.zeros(anchor.shape[0], anchor.shape[1], 4)
-    zeros = torch.tensor([0, 0, 0, 0]).float()
+    device = anchor.device
+    gt_clss = torch.zeros(anchor.shape[0], anchor.shape[1], 1).to(device)
+    gt_bboxes = torch.zeros(anchor.shape[0], anchor.shape[1], 4).to(device)
+    zeros = torch.tensor([0, 0, 0, 0]).float().to(device)
     for i in range(anchor.shape[0]):
         ious = compute_bbox_iou(anchor[0], bbox[0])
-        max_ious, max_indices = torch.max(ious, dim=1)
+        max_ious, max_indices = torch.max(ious, dim=1).to(device)
         gt_clss[i][max_ious < 0.5] = -1
         gt_bboxes[i][max_ious < 0.5] = zeros
         gt_clss[i][max_ious < 0.4] = 0
         gt_bboxes[i][max_ious < 0.4] = zeros
-        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float()
-        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]]
+        gt_clss[i][max_ious >= 0.5] = cls[i][max_indices[max_ious >= 0.5]].float().to(device)
+        gt_bboxes[i][max_ious >= 0.5] = bbox[i][max_indices[max_ious >= 0.5]].to(device)
 
-    return gt_clss.to(torch.int), gt_bboxes.to(anchor.device)
+    return gt_clss.to(torch.int), gt_bboxes
 
 def compute_bbox_targets(anchors, gt_bboxes):
     """
