@@ -59,7 +59,7 @@ def main(_):
     dataset_val = CocoDataset('val', seed=0, 
         preload_images=FLAGS.preload_images > 0,
         transform=transforms.Compose([Normalizer(), Resizer()]))
-    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True) 
+    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True, batch_size=FLAGS.batch_size) 
     
     model = RetinaNet(p67=True, fpn=True)
 
@@ -76,9 +76,10 @@ def main(_):
                                 weight_decay=FLAGS.weight_decay)
     
     milestones = [int(x) for x in FLAGS.lr_step]
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(
-    #     optimizer, milestones=milestones, gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, total_iters=FLAGS.max_iter)
+    scheduler1 = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer, milestones=milestones, gamma=0.1)
+    scheduler2 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0, total_iters=2000)
+    scheduler = torch.optim.ChainedScheduler([scheduler1, scheduler2], optimizer=optimizer)
     
     optimizer.zero_grad()
     dataloader_iter = None
