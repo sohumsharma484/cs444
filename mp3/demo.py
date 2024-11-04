@@ -29,6 +29,7 @@ flags.DEFINE_integer('preload_images', 1,
 flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
+log_every = 1
 
 def setup_logging():
     log_formatter = logging.Formatter(
@@ -52,6 +53,11 @@ def main(_):
     torch.set_num_threads(4)
     torch.manual_seed(FLAGS.seed)
     set_seed(FLAGS.seed)
+
+    # transforms = transforms.Compose([
+    #     Normalizer(),
+    #     Resizer()
+    #     ])
     
     dataset_train = CocoDataset('train', seed=FLAGS.seed,
         preload_images=FLAGS.preload_images > 0,
@@ -59,12 +65,13 @@ def main(_):
     dataset_val = CocoDataset('val', seed=0, 
         preload_images=FLAGS.preload_images > 0,
         transform=transforms.Compose([Normalizer(), Resizer()]))
-    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True, batch_size=FLAGS.batch_size) 
+    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True)#, batch_size=FLAGS.batch_size) 
     
     model = RetinaNet(p67=True, fpn=True)
 
     num_classes = dataset_train.num_classes
     device = torch.device('cuda:0')
+    device = torch.device('cpu')
     # For Mac users
     # device = torch.device("mps") 
     model.to(device)
