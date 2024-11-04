@@ -78,7 +78,7 @@ def main(_):
     milestones = [int(x) for x in FLAGS.lr_step]
     scheduler1 = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=milestones, gamma=0.1)
-    scheduler2 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0, total_iters=2000)
+    scheduler2 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.00001, total_iters=2000)
     scheduler = torch.optim.ChainedScheduler([scheduler1, scheduler2], optimizer=optimizer)
     
     optimizer.zero_grad()
