@@ -26,10 +26,10 @@ flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
-flags.DEFINE_multi_integer('lr_step', [40000, 60000, 80000], 'Iterations to reduce learning rate')
+flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
-log_every = 1
+# log_every = 1
 
 def setup_logging():
     log_formatter = logging.Formatter(
@@ -65,7 +65,7 @@ def main(_):
     dataset_val = CocoDataset('val', seed=0, 
         preload_images=FLAGS.preload_images > 0,
         transform=transform)
-    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True, batch_size=FLAGS.batch_size) 
+    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True)#, batch_size=FLAGS.batch_size) 
     
     model = RetinaNet(p67=True, fpn=True)
 
@@ -130,7 +130,8 @@ def main(_):
             break
         
         total_loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0, norm_type=2)
+        torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=30)
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=30, norm_type=2)
         optimizer.step()
         optimizer.zero_grad()
         scheduler.step()
