@@ -81,6 +81,9 @@ def main(_):
     optimizer = torch.optim.SGD(model.parameters(), lr=FLAGS.lr, 
                                 momentum=FLAGS.momentum, 
                                 weight_decay=FLAGS.weight_decay)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=FLAGS.lr, 
+                                # momentum=FLAGS.momentum, 
+                                weight_decay=FLAGS.weight_decay)
     
     milestones = [int(x) for x in FLAGS.lr_step]
     scheduler2 = torch.optim.lr_scheduler.MultiStepLR(
@@ -93,7 +96,7 @@ def main(_):
     
     times_np, cls_loss_np, bbox_loss_np, total_loss_np = [], [], [], []
     lossFunc = losses.LossFunc()
-    lossFunc = losses.FocalLoss()
+    # lossFunc = losses.FocalLoss()
      
     for i in range(FLAGS.max_iter):
         iter_start_time = time.time()
