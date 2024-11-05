@@ -26,7 +26,7 @@ flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
-flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
+flags.DEFINE_multi_integer('lr_step', [40000, 60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
 log_every = 1
@@ -65,7 +65,7 @@ def main(_):
     dataset_val = CocoDataset('val', seed=0, 
         preload_images=FLAGS.preload_images > 0,
         transform=transforms.Compose([Normalizer(), Resizer()]))
-    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True)#, batch_size=FLAGS.batch_size) 
+    dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True, batch_size=FLAGS.batch_size) 
     
     model = RetinaNet(p67=True, fpn=True)
 
@@ -85,7 +85,7 @@ def main(_):
     milestones = [int(x) for x in FLAGS.lr_step]
     scheduler2 = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=milestones, gamma=0.1)
-    scheduler1 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.00001, total_iters=2000)
+    scheduler1 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.000000001, total_iters=2000)
     scheduler = torch.optim.lr_scheduler.ChainedScheduler([scheduler1, scheduler2], optimizer=optimizer)
     
     optimizer.zero_grad()
