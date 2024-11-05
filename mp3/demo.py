@@ -56,8 +56,7 @@ def main(_):
 
     transform = transforms.Compose([
         Normalizer(),
-        Resizer(),
-        transforms.RandomHorizontalFlip(p=0.2)
+        Resizer()
         ])
     
     dataset_train = CocoDataset('train', seed=FLAGS.seed,
