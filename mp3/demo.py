@@ -54,17 +54,18 @@ def main(_):
     torch.manual_seed(FLAGS.seed)
     set_seed(FLAGS.seed)
 
-    # transforms = transforms.Compose([
-    #     Normalizer(),
-    #     Resizer()
-    #     ])
+    transform = transforms.Compose([
+        Normalizer(),
+        Resizer(),
+        transforms.RandomHorizontalFlip(p=0.2)
+        ])
     
     dataset_train = CocoDataset('train', seed=FLAGS.seed,
         preload_images=FLAGS.preload_images > 0,
-        transform=transforms.Compose([Normalizer(), Resizer()]))
+        transform=transform)
     dataset_val = CocoDataset('val', seed=0, 
         preload_images=FLAGS.preload_images > 0,
-        transform=transforms.Compose([Normalizer(), Resizer()]))
+        transform=transform)
     dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, pin_memory=True, batch_size=FLAGS.batch_size) 
     
     model = RetinaNet(p67=True, fpn=True)
