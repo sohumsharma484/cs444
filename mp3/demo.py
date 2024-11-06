@@ -21,12 +21,12 @@ flags.DEFINE_float('weight_decay', 1e-4, 'Weight Deacy for optimizer')
 flags.DEFINE_string('output_dir', 'runs/retina-net-basic/', 'Output Directory')
 flags.DEFINE_integer('batch_size', 1, 'Batch Size')
 flags.DEFINE_integer('seed', 2, 'Random seed')
-flags.DEFINE_integer('max_iter', 100000, 'Total Iterations')
+flags.DEFINE_integer('max_iter', 120000, 'Total Iterations')
 flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
-flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
+flags.DEFINE_multi_integer('lr_step', [60000, 80000, 100000], 'Iterations to reduce learning rate')
 
 log_every = 20
 # log_every = 1
