@@ -138,7 +138,7 @@ def main(_):
         
         total_loss.backward()
         # torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=30)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1, norm_type=2)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10, norm_type=2)
         optimizer.step()
         optimizer.zero_grad()
         scheduler.step()
