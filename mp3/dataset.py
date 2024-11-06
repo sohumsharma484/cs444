@@ -32,6 +32,7 @@ class CocoDataset(Dataset):
         self.coco = CocoDetection(f'{FLAGS.coco_dir}/{split}2017/',
                                   self.annotation_file)
         self.image_ids = self.coco.ids
+        self.split = split
         
         # Remap categories
         dt = json.load(open(self.annotation_file))
@@ -91,6 +92,15 @@ class CocoDataset(Dataset):
 
         if self.transform:
             image = np.asarray(image, dtype=np.float32) / 255
+            if self.split == 'train':
+                p = 0.5
+                if random.random() < p:
+                    image = np.fliplr(image)
+                    old_bbox = anno_bboxes.copy()
+                    width = image.shape[1]
+                    anno_bboxes[:, 0] = width - old_bbox[:, 2]
+                    anno_bboxes[:, 2] = width - old_bbox[:, 0]
+
             image, anno_bboxes, cls, is_crowd, image_id, resize_factor = self.transform([image, anno_bboxes, cls[..., np.newaxis], is_crowd, image_id])
 
 
