@@ -22,14 +22,14 @@ flags.DEFINE_string('output_dir', 'runs/retina-net-basic/', 'Output Directory')
 flags.DEFINE_integer('batch_size', 1, 'Batch Size')
 flags.DEFINE_integer('seed', 2, 'Random seed')
 flags.DEFINE_integer('max_iter', 100000, 'Total Iterations')
-flags.DEFINE_integer('val_every', 2000, 'Iterations interval to validate')
+flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
 flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
-# log_every = 1
+log_every = 1
 
 def setup_logging():
     log_formatter = logging.Formatter(
@@ -55,8 +55,9 @@ def main(_):
     set_seed(FLAGS.seed)
 
     transform = transforms.Compose([
+        # transforms.RandomHorizontalFlip(p=0.8),
         Normalizer(),
-        Resizer()
+        Resizer(),
         ])
     
     dataset_train = CocoDataset('train', seed=FLAGS.seed,
@@ -71,7 +72,7 @@ def main(_):
 
     num_classes = dataset_train.num_classes
     device = torch.device('cuda:0')
-    # device = torch.device('cpu')
+    device = torch.device('cpu')
     # For Mac users
     # device = torch.device("mps") 
     model.to(device)
