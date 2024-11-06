@@ -26,7 +26,7 @@ flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
-flags.DEFINE_multi_integer('lr_step', [40000, 60000, 80000], 'Iterations to reduce learning rate')
+flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
 # log_every = 1
@@ -81,9 +81,9 @@ def main(_):
     optimizer = torch.optim.SGD(model.parameters(), lr=FLAGS.lr, 
                                 momentum=FLAGS.momentum, 
                                 weight_decay=FLAGS.weight_decay)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=FLAGS.lr, 
-                                # momentum=FLAGS.momentum, 
-                                weight_decay=FLAGS.weight_decay)
+    # optimizer = torch.optim.AdamW(model.parameters(), lr=FLAGS.lr, 
+    #                             # momentum=FLAGS.momentum, 
+    #                             weight_decay=FLAGS.weight_decay)
     
     milestones = [int(x) for x in FLAGS.lr_step]
     scheduler2 = torch.optim.lr_scheduler.MultiStepLR(
@@ -96,7 +96,7 @@ def main(_):
     
     times_np, cls_loss_np, bbox_loss_np, total_loss_np = [], [], [], []
     lossFunc = losses.LossFunc()
-    # lossFunc = losses.FocalLoss()
+    # lossFunc = losses.FocalLoss(num_classes)
      
     for i in range(FLAGS.max_iter):
         iter_start_time = time.time()
@@ -135,7 +135,7 @@ def main(_):
         
         total_loss.backward()
         # torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=30)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=30, norm_type=2)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1, norm_type=2)
         optimizer.step()
         optimizer.zero_grad()
         scheduler.step()
