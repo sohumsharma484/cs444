@@ -22,7 +22,7 @@ flags.DEFINE_string('output_dir', 'runs/retina-net-basic/', 'Output Directory')
 flags.DEFINE_integer('batch_size', 1, 'Batch Size')
 flags.DEFINE_integer('seed', 2, 'Random seed')
 flags.DEFINE_integer('max_iter', 120000, 'Total Iterations')
-flags.DEFINE_integer('val_every', 10000, 'Iterations interval to validate')
+flags.DEFINE_integer('val_every', 20000, 'Iterations interval to validate')
 flags.DEFINE_integer('save_every', 50000, 'Iterations interval to validate')
 flags.DEFINE_integer('preload_images', 1, 
     'Weather to preload train and val images at beginning of training. Preloading takes about 7 minutes on campus cluster but speeds up training by a lot. Set to 0 to disable.')
