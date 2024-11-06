@@ -14,6 +14,7 @@ from torch.utils.data.sampler import Sampler
 import random
 from io import BytesIO
 from base64 import b64decode
+from torchvision import transforms
 
 import skimage.io
 import skimage.transform
@@ -93,13 +94,25 @@ class CocoDataset(Dataset):
         if self.transform:
             image = np.asarray(image, dtype=np.float32) / 255
             if self.split == 'train':
-                p = 0.5
-                if random.random() < p:
+                p_hflip = 0.5
+                p_vflip = 0.2
+                p_jitter = 0.8
+                if random.random() < p_hflip:
                     image = np.fliplr(image)
                     old_bbox = anno_bboxes.copy()
                     width = image.shape[1]
                     anno_bboxes[:, 0] = width - old_bbox[:, 2]
                     anno_bboxes[:, 2] = width - old_bbox[:, 0]
+                if random.random() < p_vflip:
+                    image = np.flipud(image)
+                    old_bbox = anno_bboxes.copy()
+                    height = image.shape[0]
+                    anno_bboxes[:, 1] = height - old_bbox[:, 3]
+                    anno_bboxes[:, 3] = height - old_bbox[:, 1]
+                if random.random() < p_jitter:
+                    jitter = transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)
+                    image = jitter(Image.fromarray((image * 255).astype(np.uint8)))
+                    image = np.asarray(image, dtype=np.float32) / 255
 
             image, anno_bboxes, cls, is_crowd, image_id, resize_factor = self.transform([image, anno_bboxes, cls[..., np.newaxis], is_crowd, image_id])
 
