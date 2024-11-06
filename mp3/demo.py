@@ -29,7 +29,7 @@ flags.DEFINE_integer('preload_images', 1,
 flags.DEFINE_multi_integer('lr_step', [60000, 80000], 'Iterations to reduce learning rate')
 
 log_every = 20
-log_every = 1
+# log_every = 1
 
 def setup_logging():
     log_formatter = logging.Formatter(
@@ -72,7 +72,7 @@ def main(_):
 
     num_classes = dataset_train.num_classes
     device = torch.device('cuda:0')
-    device = torch.device('cpu')
+    # device = torch.device('cpu')
     # For Mac users
     # device = torch.device("mps") 
     model.to(device)
